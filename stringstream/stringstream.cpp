@@ -6,10 +6,13 @@
 
 using std::string;
 using std::istringstream;
+using std::istream;
 using std::vector;
 
 
-const string rulesText{"When Dawning Angel enters the battlefield, you gain 4 life."};
+const string rulesText0{"Flying"};
+const string rulesText1{"When Dawning Angel enters the battlefield, you gain 4 life."};
+const string rulesText2{"Enchanted creature gets -2/-0. It gets -6/-0 instead as long as its controller has seven or more cards in their graveyard."};
 
 
 int main()
@@ -17,32 +20,17 @@ int main()
     using std::cout;
     using std::endl;
 
-    istringstream ss{rulesText};
+    istringstream ss{rulesText1};
     vector<string> vPhrases;
 
     string sentence{};
     std::getline(ss, sentence);  // grabs whole sentence
 
-    istringstream ssSentence{sentence};
-    string phrase{};
-    while (!ssSentence.eof())
-    {
-        char c = static_cast<char>(ssSentence.peek());
-        if (c != ',' && c != '.' && c != ';')
-        {
-            c = static_cast<char>(ssSentence.get());
-            phrase += c;
-        }
-        else
-        {
-            vPhrases.push_back(phrase);
-            phrase.clear();
-            ssSentence.ignore(1); // skip ,.; and ws
-            ssSentence >> std::ws;
-        }
-    }
+    // For each sentence:
+    // - Find first ,.; and store the string up to that point.
+    // - Repeat until npos?
 
-    cout << "SENTENCE: " << sentence << endl << endl;
+    cout << "SENTENCE: " << sentence << endl;
     cout << "PHRASES" << endl;
     cout << "=======" << endl;
     
