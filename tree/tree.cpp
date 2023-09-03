@@ -108,7 +108,7 @@ const shared_ptr<typename tree<T>::node> tree<T>::find(const T& item) const
 // ---------------------
 
 template<copy_orderable T>
-tree<T>::node::node() : pParent(nullptr), pLeft(nullptr), pRight(nullptr), myColor(color::black)
+tree<T>::node::node() : pParent(nullptr), pLeft(nullptr), pRight(nullptr), myColor(color_t::black)
 {
 }
 

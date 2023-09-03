@@ -10,7 +10,6 @@
 				"/EHsc",
 				"/nologo",
 				"/std:c++20",
-				"/Fe${fileDirname}\\${fileBasenameNoExtension}.exe",
 				"${file}"
 			],
 			"options": {
@@ -22,7 +21,7 @@
 			"group": {
 				"kind": "build"
 			},
-			"detail": "Builds the active file into an exe."
+			"detail": "Builds the active file."
 		},
 		{
 			"type": "cppbuild",
@@ -48,29 +47,6 @@
 			},
 			"detail": "Builds the selected subproject."
 		},
-		{
-			"type": "cppbuild",
-			"label": "C/C++: cl.exe build folder",
-			"command": "cl.exe",
-			"args": [
-				"/Zi",
-				"/EHsc",
-				"/nologo",
-				"/Fe:${input:subfolder}\\${fileDirnameBasename}.exe",
-				"*.cpp"
-			],
-			"options": {
-				"cwd": "${input:subfolder}"
-			},
-			"problemMatcher": [
-				"$msCompile"
-			],
-			"group": {
-				"kind": "build",
-				"isDefault": true
-			},
-			"detail": "Builds the selected subproject."
-		}
 	],
 	"inputs": [
 		{
