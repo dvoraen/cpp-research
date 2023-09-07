@@ -2,8 +2,9 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
+			"label": "build active file",
+			"detail": "Builds the active file.",
 			"type": "cppbuild",
-			"label": "C/C++: cl.exe build active file",
 			"command": "cl.exe",
 			"args": [
 				"/Zi",
@@ -23,11 +24,11 @@
 			"group": {
 				"kind": "build"
 			},
-			"detail": "Builds the active file."
 		},
 		{
+			"label": "build subfolder",
+			"detail": "Builds the selected subproject.",
 			"type": "cppbuild",
-			"label": "C/C++: cl.exe build subfolder",
 			"command": "cl.exe",
 			"args": [
 				"/Zi",
@@ -35,11 +36,11 @@
 				"/W4",
 				"/nologo",
 				"/std:c++20",
-				"/Fe${workspaceFolder}\\${input:subfolder}\\main.exe",
-				"${workspaceFolder}\\${input:subfolder}\\*.cpp"
+				"/Femain.exe",
+				"*.cpp"
 			],
 			"options": {
-				"cwd": "{$workspaceFolder}\\${input:subfolder}"
+				"cwd": "${workspaceFolder}\\${input:subfolder}"
 			},
 			"problemMatcher": [
 				"$msCompile"
@@ -48,7 +49,36 @@
 				"kind": "build",
 				"isDefault": true
 			},
-			"detail": "Builds the selected subproject."
+		},
+		{
+			"label": "clean subfolder",
+			"detail": "Removes build files from the subfolder.",
+			"type": "shell",
+			"windows": {
+				// shell commands should have everything in the command string
+				// per Tasks schema, don't use args except for "process" type Tasks
+				"command": "rm -Path *.o, *.obj, *.pch, *.exe, *.pdb",
+				"options": {
+					"cwd": "${workspaceFolder}\\${input:subfolder}",
+				},
+			},
+			"problemMatcher": [],
+			"group": {
+				"kind": "none",
+			},
+		},
+		{
+			"label": "rebuild subfolder",
+			"detail": "Cleans then builds the subfolder.",
+			"type": "shell",
+			"command": "echo Rebuilding project '${input:subfolder}'",
+			"group": "build",
+			"dependsOn": [
+				"clean subfolder",
+				"build subfolder"
+			],
+			"dependsOrder": "sequence",
+			"problemMatcher": "$msCompile",
 		},
 	],
 	"inputs": [
