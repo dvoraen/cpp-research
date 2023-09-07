@@ -8,6 +8,8 @@
 			"args": [
 				"/Zi",
 				"/EHsc",
+				"/W4",
+				"/c",
 				"/nologo",
 				"/std:c++20",
 				"${file}"
@@ -30,6 +32,7 @@
 			"args": [
 				"/Zi",
 				"/EHsc",
+				"/W4",
 				"/nologo",
 				"/std:c++20",
 				"/Fe${workspaceFolder}\\${input:subfolder}\\main.exe",
