@@ -31,5 +31,9 @@
 *.out
 *.app
 
-# Microsoft specific
+# Microsoft specific?
 *.pdb
+*.ilk
+
+# Random log files
+*.txt

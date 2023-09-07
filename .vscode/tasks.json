@@ -2,8 +2,8 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
-			"label": "build active file",
-			"detail": "Builds the active file.",
+			"label": "compile active file",
+			"detail": "Compiles the active file.",
 			"type": "cppbuild",
 			"command": "cl.exe",
 			"args": [
@@ -21,9 +21,26 @@
 			"problemMatcher": [
 				"$msCompile"
 			],
-			"group": {
-				"kind": "build"
+			"group": "build",
+		},
+		{
+			"label": "build active project",
+			"detail": "Builds the active file's subfolder.",
+			"type": "cppbuild",
+			"command": "cl.exe",
+			"args": [
+				"/Zi",
+				"/EHsc",
+				"/W4",
+				"/nologo",
+				"/std:c++20",
+				"*.cpp"
+			],
+			"options": {
+				"cwd": "${fileDirname}"
 			},
+			"problemMatcher": "$msCompile",
+			"group": "build"
 		},
 		{
 			"label": "build subfolder",
@@ -49,6 +66,15 @@
 				"kind": "build",
 				"isDefault": true
 			},
+			"presentation": {
+				"group": "build",
+				"echo": false,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared",
+				"showReuseMessage": false,
+				"clear": false
+			}
 		},
 		{
 			"label": "clean subfolder",
@@ -57,7 +83,7 @@
 			"windows": {
 				// shell commands should have everything in the command string
 				// per Tasks schema, don't use args except for "process" type Tasks
-				"command": "rm -Path *.o, *.obj, *.pch, *.exe, *.pdb",
+				"command": "rm -Path *.o, *.obj, *.pch, *.exe, *.pdb, *.ilk",
 				"options": {
 					"cwd": "${workspaceFolder}\\${input:subfolder}",
 				},
@@ -66,6 +92,15 @@
 			"group": {
 				"kind": "none",
 			},
+			"presentation": {
+				"group": "build",
+				"echo": false,
+				"reveal": "never",
+				"focus": false,
+				"panel": "shared",
+				"showReuseMessage": false,
+				"clear": false
+			}
 		},
 		{
 			"label": "rebuild subfolder",
@@ -78,7 +113,16 @@
 				"build subfolder"
 			],
 			"dependsOrder": "sequence",
-			"problemMatcher": "$msCompile",
+			"problemMatcher": [],
+			"presentation": {
+				"group": "build",
+				"echo": true,
+				"reveal": "silent",
+				"focus": false,
+				"panel": "dedicated",
+				"showReuseMessage": false,
+				"clear": true
+			}
 		},
 	],
 	"inputs": [
