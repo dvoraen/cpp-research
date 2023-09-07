@@ -21,7 +21,7 @@
 			"problemMatcher": [
 				"$msCompile"
 			],
-			"group": "build",
+			"group": "build"
 		},
 		{
 			"label": "build active project",
@@ -40,7 +40,10 @@
 				"cwd": "${fileDirname}"
 			},
 			"problemMatcher": "$msCompile",
-			"group": "build"
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			}
 		},
 		{
 			"label": "build subfolder",
@@ -62,10 +65,7 @@
 			"problemMatcher": [
 				"$msCompile"
 			],
-			"group": {
-				"kind": "build",
-				"isDefault": true
-			},
+			"group": "build",
 			"presentation": {
 				"group": "build",
 				"echo": false,
@@ -81,16 +81,14 @@
 			"detail": "Removes build files from the subfolder.",
 			"type": "shell",
 			"windows": {
-				// shell commands should have everything in the command string
-				// per Tasks schema, don't use args except for "process" type Tasks
 				"command": "rm -Path *.o, *.obj, *.pch, *.exe, *.pdb, *.ilk",
 				"options": {
-					"cwd": "${workspaceFolder}\\${input:subfolder}",
-				},
+					"cwd": "${workspaceFolder}\\${input:subfolder}"
+				}
 			},
 			"problemMatcher": [],
 			"group": {
-				"kind": "none",
+				"kind": "none"
 			},
 			"presentation": {
 				"group": "build",
@@ -123,7 +121,7 @@
 				"showReuseMessage": false,
 				"clear": true
 			}
-		},
+		}
 	],
 	"inputs": [
 		{
