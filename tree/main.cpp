@@ -5,6 +5,11 @@
 #include <fstream>
 #include <vector>
 
+using std::cout;
+using std::clog;
+using std::cerr;
+using std::endl;
+
 /// @brief The main function.
 /// @return 0 if all goes well.
 int main()
@@ -14,9 +19,11 @@ int main()
     std::ofstream logFile("tree_log.txt");
 
     if (logFile.is_open())
-        std::clog.tie(&logFile);
+        clog.tie(&logFile);
     else
-        std::cerr << "unable to tie tree_log.txt to clog" << std::endl;
+        cerr << "unable to tie tree_log.txt to clog" << std::endl;
+
+    clog << "test data" << endl;
 
     // Initialize tree.
     tree<int> tree;
