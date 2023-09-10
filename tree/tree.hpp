@@ -3,18 +3,10 @@
 
 // Templatized, STL-compatible, self-balancing binary search tree
 
-// TODO: concepts for T?
-
 #pragma once
 
 #ifndef __tree_hpp__
 #define __tree_hpp__
-
-#include <memory>
-
-using std::shared_ptr;
-using std::weak_ptr;
-using std::unique_ptr;
 
 // TODO: Audit changes to weak_ptr<node>
 // TODO: Replace remaining node* uses with weak_ptr<node>
@@ -22,6 +14,16 @@ using std::unique_ptr;
 #include "node.hpp"
 #include "concepts.hpp"
 
+#include <memory>
+
+using std::shared_ptr;
+using std::weak_ptr;
+using std::unique_ptr;
+
+#include <iostream>
+#include <iomanip>
+using std::cout;
+using std::endl;
 
 // Binary search tree.
 // Requirements on T:
@@ -40,7 +42,7 @@ public:
     // void insert(T&& item);
     // void insert(InputIt first, InputIt last);
 
-    void erase(const T& item);
+    void remove(const T& item);
     void clear() noexcept;
 
     bool contains(const T& item) const;
@@ -48,35 +50,28 @@ public:
     size_t size() const noexcept;
     bool empty() const noexcept;
 
+    // TODO: report() will spill the guts on the tree using in-order traversion
+    void report() const;
+
 private:
     shared_ptr<node<T>> pRoot; // root of tree    
     size_t mySize; // size of tree
 
+    void insert_node(shared_ptr<node<T>> pNewNode);
+
+    void report_recurse(const shared_ptr<node<T>>& pNode) const;
+    void visit_node(const shared_ptr<node<T>>& pNode) const;
+
     const shared_ptr<node<T>> find(const T& item) const;
-    void balance_at(node<T>& node);
+    void balance_at(shared_ptr<node<T>> node);
 };
-
-// ----------------------
-// tree<T> inline methods
-// ----------------------
-template <copy_orderable T>
-inline size_t tree<T>::size() const noexcept
-{
-    return mySize;
-}
-
-template <copy_orderable T>
-inline bool tree<T>::empty() const noexcept
-{
-    return (pRoot == nullptr);
-}
 
 // ------------------
 // tree<T> definition
 // ------------------
 
 template <copy_orderable T>
-tree<T>::tree() : pRoot(nullptr), mySize(0)
+tree<T>::tree() : pRoot{ nullptr }, mySize{ 0 }
 {
 }
 
@@ -89,7 +84,7 @@ tree<T>::tree(const tree<T>& tree) : tree()
 }
 
 template<copy_orderable T>
-tree<T>::tree(tree<T>&& tree) noexcept : pRoot(tree.pRoot), mySize(tree.mySize)
+tree<T>::tree(tree<T>&& tree) noexcept : pRoot{ tree.pRoot }, mySize{ tree.mySize }
 {
     tree.pRoot.reset();
     tree.mySize = 0;
@@ -106,30 +101,23 @@ tree<T>::~tree()
 template<copy_orderable T>
 void tree<T>::insert(const T& item)
 {
-    using color_t = typename node<T>::color_t;
-    using child_t = typename node<T>::child_t;
+    shared_ptr<node<T>> pNewNode{ std::make_shared<node<T>>(item) };
 
-    auto pNewNode = std::make_shared<node<T>>(item);
-
-    // TODO: insertion logic here
-    // bst_insert(item);
-    pNewNode->set_color(color_t::red);
-    // TODO: should the balance take place in tree<T> or node<T>?
-    // this->balance_at(pNewNode);
-
-    pNewNode->set_child(child_t::left, pRoot);
-    pRoot = pNewNode;
+    this->insert_node(pNewNode);
+    this->balance_at(pNewNode);
 
     this->mySize += 1;
 }
 
 template <copy_orderable T>
-void tree<T>::erase(const T& item)
+void tree<T>::remove(const T& item)
 {
     if (this->empty() || !this->contains(item))
         return;
 
     // TODO: deletion logic here
+
+    // this->balance_at();
 
     this->mySize -= 1;
 }
@@ -152,13 +140,99 @@ bool tree<T>::contains(const T& item) const
 }
 
 template <copy_orderable T>
+inline size_t tree<T>::size() const noexcept
+{
+    return mySize;
+}
+
+template <copy_orderable T>
+inline bool tree<T>::empty() const noexcept
+{
+    return (pRoot == nullptr);
+}
+
+template<copy_orderable T>
+void tree<T>::report() const
+{
+    if (this->empty())
+    {
+        cout << "tree is empty" << endl;
+        return;
+    }
+
+    report_recurse(pRoot);
+}
+
+// tree<T> private methods
+
+template<copy_orderable T>
+void tree<T>::insert_node(shared_ptr<node<T>> pNewNode)
+{
+    // CASE: empty tree; insert at root
+    if (!pRoot)
+    {
+        pRoot = pNewNode;
+        return;
+    }
+
+    using child_t = typename node<T>::child_t;
+    child_t whichChild{};
+
+    shared_ptr<node<T>> pCurrentNode{ pRoot };
+    shared_ptr<node<T>> pParentNode{ nullptr };
+
+    // Iterate through tree to find insertion point.
+    while (pCurrentNode)
+    {
+        // Track parent node.
+        pParentNode = pCurrentNode;
+
+        // If left child, track that we're going left.
+        if (pNewNode->get_item() < pCurrentNode->get_item())
+        {
+            pCurrentNode = pCurrentNode->left();
+            whichChild = child_t::left;
+        }
+        // If right child, track that we're going right.
+        else
+        {
+            pCurrentNode = pCurrentNode->right();
+            whichChild = child_t::right;
+        }
+    }
+
+    // Parent will set the child of the direction we last went.
+    // Operation is done relative to the parent to ensure we get the right
+    // smart pointer pointing to the right node (the new one).
+    pParentNode->set_child(whichChild, pNewNode);
+    pNewNode->set_parent(pParentNode);
+}
+
+template<copy_orderable T>
+void tree<T>::report_recurse(const shared_ptr<node<T>>& pNode) const
+{
+    if (!pNode)
+        return;
+
+    visit_node(pNode);
+    report_recurse(pNode->left());
+    report_recurse(pNode->right());
+}
+
+template<copy_orderable T>
+void tree<T>::visit_node(const shared_ptr<node<T>>& pNode) const
+{
+    pNode->status();
+}
+
+template <copy_orderable T>
 const shared_ptr<node<T>> tree<T>::find(const T& item) const
 {
-    auto pCurrent = pRoot;
+    shared_ptr<node<T>> pCurrent{ pRoot };
 
     while (pCurrent)
     {
-        const T& thisItem = pCurrent->item();
+        const T& thisItem{ pCurrent->get_item() };
 
         if (item == thisItem)
             return pCurrent;
@@ -172,15 +246,9 @@ const shared_ptr<node<T>> tree<T>::find(const T& item) const
 }
 
 template<copy_orderable T>
-void tree<T>::balance_at(node<T>& node)
+void tree<T>::balance_at(shared_ptr<node<T>> node)
 {
+    // CASE: rotating the tree root
 }
-
-// ---------------------------
-// STL template specifications
-// ---------------------------
-
-// swap()
-// other algorithms?
 
 #endif

@@ -13,7 +13,8 @@ using std::weak_ptr;
 using std::string;
 
 #include <iostream>
-using std::clog;
+#include <iomanip>
+using std::cout;
 using std::endl;
 
 #include "utility.hpp"
@@ -27,42 +28,66 @@ public:
 
     node();
     explicit node(const T& item);
-    explicit node(T&& item);
     ~node();
 
-    shared_ptr<node> left() const;
-    shared_ptr<node> right() const;
-    shared_ptr<node> up() const;
+    shared_ptr<node<T>> left() const;
+    shared_ptr<node<T>> right() const;
+    shared_ptr<node<T>> parent() const;
 
-    const T& item() const;
+    const T& get_item() const noexcept;
 
     void set_child(child_t child, shared_ptr<node<T>> pNewChild);
     void set_parent(shared_ptr<node<T>>& pNewParent);
     void set_color(color_t color);
 
+    bool is_red() const noexcept;
+    bool is_black() const noexcept;
+    bool is_left() const;
+    bool is_right() const;
+
     void rotate_left();
     void rotate_right();
 
     string color_text() const;
+    void status() const;
 
 private:
-    shared_ptr<node> pLeft;
-    shared_ptr<node> pRight;
-    weak_ptr<node> pParent;
+    shared_ptr<node<T>> pLeft;
+    shared_ptr<node<T>> pRight;
+    weak_ptr<node<T>> pParent;
 
     T myItem;
 
     color_t myColor;
 
-    shared_ptr<node> sibling() const;
-    shared_ptr<node> uncle() const;
-    shared_ptr<node> successor() const;
-
+    shared_ptr<node<T>> sibling() const;
+    shared_ptr<node<T>> uncle() const;
+    shared_ptr<node<T>> grandparent() const;
+    shared_ptr<node<T>> successor() const;
 };
 
-// ----------------------
-// node<T> inline methods
-// ----------------------
+// ------------------
+// node<T> definition
+// ------------------
+
+template<copy_orderable T>
+node<T>::node() : pLeft{ nullptr }, pRight{ nullptr }, myColor{ color_t::red }
+{
+}
+
+template<copy_orderable T>
+node<T>::node(const T& item) : pLeft{ nullptr }, pRight{ nullptr }, myColor{ color_t::red }, myItem{ item }
+{
+}
+
+template<copy_orderable T>
+node<T>::~node()
+{
+    auto myItemStr{ std::to_string(myItem) };
+
+    cout << "~node" << enclose(myItemStr, '(') << endl;
+}
+
 template <copy_orderable T>
 inline shared_ptr<node<T>> node<T>::left() const
 {
@@ -76,64 +101,21 @@ inline shared_ptr<node<T>> node<T>::right() const
 }
 
 template <copy_orderable T>
-inline shared_ptr<node<T>> node<T>::up() const
+inline shared_ptr<node<T>> node<T>::parent() const
 {
-    if (pParent)
-        return pParent->lock();
-
-    return nullptr;
+    return (!pParent.expired() ? pParent.lock() : nullptr);
 }
 
 template <copy_orderable T>
-inline const T& node<T>::item() const
+inline const T& node<T>::get_item() const noexcept
 {
     return myItem;
 }
 
 template <copy_orderable T>
-inline string node<T>::color_text() const
+inline void node<T>::set_child(child_t child, shared_ptr<node<T>> pNewChild)
 {
-    return (myColor == color_t::black ? "black" : "red");
-}
-
-// ostream& operator << (ostream& os, node::child_t child);
-// ostream& operator << (ostream& os, node::color_t color);
-
-// ------------------
-// node<T> definition
-// ------------------
-
-template<copy_orderable T>
-node<T>::node() : pLeft(nullptr), pRight(nullptr), myColor(color_t::black)
-{
-}
-
-template<copy_orderable T>
-node<T>::node(const T& item) : pLeft(nullptr), pRight(nullptr), myColor(color_t::black), myItem(item)
-{
-}
-
-template<copy_orderable T>
-node<T>::node(T&& item) : node(item)
-{
-}
-
-template<copy_orderable T>
-node<T>::~node()
-{
-    string myItemStr = std::to_string(myItem);
-    string leftItemStr = pLeft ? std::to_string(pLeft->item()) : "null";
-    string rightItemStr = pRight ? std::to_string(pRight->item()) : "null";
-
-    clog << "~node() -> " << enclose(myItemStr, '[') << endl;
-    clog << "- left is " << enclose(leftItemStr, '[') << endl;
-    clog << "- right is " << enclose(rightItemStr, '[') << endl;
-}
-
-template <copy_orderable T>
-void node<T>::set_child(child_t child, shared_ptr<node> pNewChild)
-{
-    shared_ptr<node>& pChild{ (child == child_t::left) ? pLeft : pRight };
+    shared_ptr<node<T>>& pChild{ (child == child_t::left) ? pLeft : pRight };
 
     pChild = pNewChild;
 }
@@ -145,41 +127,113 @@ inline void node<T>::set_parent(shared_ptr<node<T>>& pNewParent)
 }
 
 template <copy_orderable T>
-void node<T>::set_color(color_t color)
+inline void node<T>::set_color(color_t color)
 {
     myColor = color;
-
-    clog << "node " << enclose(std::to_string(myItem), '[') << " is now ";
-    // "node [n] is now "
-    clog << enclose(this->color_text(), '<');
-    // "node [n] is now <black/red>"
-    clog << endl;
 }
+
+template<copy_orderable T>
+inline bool node<T>::is_red() const noexcept
+{
+    return (myColor == color_t::red);
+}
+
+template<copy_orderable T>
+inline bool node<T>::is_black() const noexcept
+{
+    return (myColor == color_t::black);
+}
+
+template<copy_orderable T>
+inline bool node<T>::is_left() const
+{
+    return (!pParent.expired() ? (this == this->parent()->left().get()) : false);
+}
+
+template<copy_orderable T>
+inline bool node<T>::is_right() const
+{
+    return (!pParent.expired() ? (this == this->parent()->right().get()) : false);
+}
+
+// ostream& operator << (ostream& os, node::child_t child);
+// ostream& operator << (ostream& os, node::color_t color);
 
 template <copy_orderable T>
 void node<T>::rotate_left()
 {
-    clog << "rotate_left() at " << enclose(myItem, '[') << endl;
+    // rotating left leads to the following effects :
+    // - this node's new parent is the former right child
+    // - this node's left child is unchanged
+    // - this node's new right child is its successor
+    // - this node is the new parent's left child
+    // - the new parent's parent is this node's old parent
+
+    auto pOldParent{ pParent };
+    auto pNewParent{ pRight };
+
+    this->set_parent(pNewParent);
+    // left child is unchanged
+    // new parent's left child is this node
+    this->set_child(child_t::right, pNewParent->left());
+    pNewParent->set_parent(pOldParent);
+
+    cout << "rotate_left() at " << enclose(myItem, '[') << endl;
     // "rotate_left() at [n]"
+    this->status();
 }
 
 template <copy_orderable T>
 void node<T>::rotate_right()
 {
-    clog << "rotate_right() at " << enclose(myItem, '[') << endl;
+    auto pOldParent{ pParent };
+    auto pNewParent{ pLeft };
+
+    this->set_parent(pNewParent);
+    // right child is unchanged
+    // this node's left child is new parent's current left child
+    // new parent's new left child is this node
+    pNewParent->set_parent(pOldParent);
+
+    cout << "rotate_right() at " << enclose(myItem, '[') << endl;
     // "rotate_right() at [n]"
+
+    this->status();
 }
+
+template <copy_orderable T>
+inline string node<T>::color_text() const
+{
+    return (myColor == color_t::black ? "black" : "red");
+}
+
+template<copy_orderable T>
+void node<T>::status() const
+{
+    auto myItemStr{ std::to_string(myItem) };
+    auto parentItemStr{ pParent.expired() ? "null" : std::to_string(pParent.lock()->get_item()) };
+    auto leftItemStr{ pLeft ? std::to_string(pLeft->get_item()) : "null" };
+    auto rightItemStr{ pRight ? std::to_string(pRight->get_item()) : "null" };
+
+    cout << std::boolalpha;
+    cout << "node " << enclose(myItemStr, '[') << " -- ";
+    cout << "parent: " << enclose(parentItemStr, '(') << " -- ";
+    cout << "left: " << enclose(leftItemStr, '<') << ' ';
+    cout << "right: " << enclose(rightItemStr, '<') << " -- ";
+    cout << "(is_left: " << this->is_left() << " is_right: " << this->is_right() << ')' << endl;
+}
+
+// node<T> private methods
 
 template <copy_orderable T>
 shared_ptr<node<T>> node<T>::sibling() const
 {
-    if (!pParent)
+    if (pParent.expired())
         return nullptr;
 
-    shared_ptr<node> pSharedParent = pParent->lock();
+    shared_ptr<node<T>> pSharedParent{ pParent.lock() };
 
     // if this is parent's left child; return right child
-    // BUG: this ptr won't be equal to a shared_ptr, necessarily
     if (this == pSharedParent->left().get())
         return pSharedParent->right();
     else
@@ -187,27 +241,36 @@ shared_ptr<node<T>> node<T>::sibling() const
 }
 
 template <copy_orderable T>
-shared_ptr<node<T>> node<T>::uncle() const
+inline shared_ptr<node<T>> node<T>::uncle() const
 {
-    return (pParent ? pParent->lock()->sibling() : nullptr);
+    return (!pParent.expired() ? this->parent()->sibling() : nullptr);
+}
+
+template<copy_orderable T>
+inline shared_ptr<node<T>> node<T>::grandparent() const
+{
+    return (!pParent.expired() ? this->parent()->parent() : nullptr);
 }
 
 template <copy_orderable T>
 shared_ptr<node<T>> node<T>::successor() const
 {
-    if (!this->right())
+    if (!pRight)
         return nullptr;
 
     // successor is the left-most node of the right subtree
-    shared_ptr<node> pCurrent = this->right();
+    shared_ptr<node<T>> pCurrent{ pRight };
 
     while (pCurrent->left())
         pCurrent = pCurrent->left();
 
-    clog << "successor of " << enclose(this->myItem, '[') << " is ";
+    auto myItemStr{ std::to_string(this->get_item()) };
+    auto successorStr{ std::to_string(pCurrent->get_item()) };
+
+    cout << "successor of " << enclose(myItemStr, '[') << " is ";
     // "successor of [n] is "
-    clog << enclose(pCurrent->myItem, ']') << endl;
-    // "successor of [n] is [x]"
+    cout << enclose(successorStr, '<') << endl;
+    // "successor of [n] is <x>"
 
     return pCurrent;
 }
