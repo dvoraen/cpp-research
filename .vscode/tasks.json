@@ -10,9 +10,9 @@
 				"/Zi",
 				"/EHsc",
 				"/W4",
-				"/c",
 				"/nologo",
 				"/std:c++20",
+				"/c",
 				"${file}"
 			],
 			"options": {
@@ -42,7 +42,6 @@
 			"problemMatcher": "$msCompile",
 			"group": {
 				"kind": "build",
-				"isDefault": true
 			}
 		},
 		{
@@ -60,51 +59,38 @@
 				"*.cpp"
 			],
 			"options": {
-				"cwd": "${workspaceFolder}\\${input:subfolder}"
+				"cwd": "${workspaceFolder}\\${input:projectFolder}"
 			},
 			"problemMatcher": [
 				"$msCompile"
 			],
-			"group": "build",
-			"presentation": {
-				"group": "build",
-				"echo": false,
-				"reveal": "always",
-				"focus": false,
-				"panel": "shared",
-				"showReuseMessage": false,
-				"clear": false
-			}
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
 		},
 		{
 			"label": "clean subfolder",
 			"detail": "Removes build files from the subfolder.",
 			"type": "shell",
 			"windows": {
+				// shell commands should list the command in its entirety; i.e. no "args"
+				// should be provided
 				"command": "rm -Path *.o, *.obj, *.pch, *.exe, *.pdb, *.ilk",
 				"options": {
-					"cwd": "${workspaceFolder}\\${input:subfolder}"
+					"cwd": "${workspaceFolder}\\${input:projectFolder}"
 				}
 			},
 			"problemMatcher": [],
 			"group": {
 				"kind": "none"
 			},
-			"presentation": {
-				"group": "build",
-				"echo": false,
-				"reveal": "never",
-				"focus": false,
-				"panel": "shared",
-				"showReuseMessage": false,
-				"clear": false
-			}
 		},
 		{
 			"label": "rebuild subfolder",
 			"detail": "Cleans then builds the subfolder.",
 			"type": "shell",
-			"command": "echo Rebuilding project '${input:subfolder}'",
+			"command": "echo Rebuilding project '${input:projectFolder}'",
 			"group": "build",
 			"dependsOn": [
 				"clean subfolder",
@@ -125,7 +111,7 @@
 	],
 	"inputs": [
 		{
-			"id": "subfolder",
+			"id": "projectFolder",
 			"type": "pickString",
 			"description": "Pick the subfolder project.",
 			"options": [

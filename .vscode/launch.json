@@ -8,13 +8,26 @@
             "name": "debug active project",
             "type": "cppvsdbg",
             "request": "launch",
-            "program": "${fileDirname}\\${fileBasenameNoExtension}.exe",
+            "program": "main.exe",
             "args": [],
             "stopAtEntry": true,
-            "cwd": "${fileDirname}",
+            "cwd": "${workspaceFolder}\\${input:projectFolder}",
             "environment": [],
             "console": "integratedTerminal",
             "preLaunchTask": "build active project"
+        }
+    ],
+    "inputs": [
+        {
+            "id": "projectFolder",
+            "description": "The subproject to launch.",
+            "type": "pickString",
+            "options": [
+                "string",
+                "stringstream",
+                "tree"
+            ],
+            "default": "tree",
         }
     ]
 }
